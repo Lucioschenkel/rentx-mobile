@@ -3,66 +3,54 @@ import { Feather } from '@expo/vector-icons';
 
 import {
   Calendar as CustomCalendar,
+  DateData,
   LocaleConfig,
 } from 'react-native-calendars';
 import { useTheme } from 'styled-components/native';
+import { ptBR } from './localeConfig';
 
-LocaleConfig.locales['pt-br'] = {
-  monthNames: [
-    'Janeiro',
-    'Fevereiro',
-    'Março',
-    'Abril',
-    'Maio',
-    'Junho',
-    'Julho',
-    'Agosto',
-    'Setembro',
-    'Outubro',
-    'Novembro',
-    'Dezembro',
-  ],
-  monthNamesShort: [
-    'Jan',
-    'Fev',
-    'Mar',
-    'Abr',
-    'Mai',
-    'Jun',
-    'Jul',
-    'Ago',
-    'Set',
-    'Out',
-    'Nov',
-    'Dez',
-  ],
-  dayNames: [
-    'Domingo',
-    'Segunda',
-    'Terça',
-    'Quarta',
-    'Quinta',
-    'Sexta',
-    'Sábado',
-  ],
-  dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) =>
-    day.toUpperCase()
-  ),
-  today: 'Hoje',
-};
+LocaleConfig.locales['pt-br'] = ptBR;
 
 LocaleConfig.defaultLocale = 'pt-br';
 
-export function Calendar() {
+export { generateDefaultInterval } from './generateInterval';
+
+interface MarkedDateProps {
+  [date: string]: {
+    color: string;
+    textColor: string;
+    disabled?: boolean;
+    disableTouchEvent?: boolean;
+  };
+}
+
+interface DayProps {
+  dateString: string;
+  day: number;
+  month: number;
+  year: number;
+  timestamp: number;
+}
+
+interface CalendarProps {
+  markedDates: MarkedDateProps;
+  onDayPress: (date: DateData) => void;
+}
+
+function Calendar({ markedDates, onDayPress }: CalendarProps) {
   const theme = useTheme();
 
   const today = new Date();
 
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1);
-  const day = today.getDate();
+  const day = String(today.getDate());
 
-  const minDate = `${year}-${month.length === 1 ? `0${month}` : month}-${day}`;
+  const minDate = `${year}-${month.length === 1 ? `0${month}` : month}-${
+    day.length === 1 ? `0${day}` : day
+  }`;
+
+  console.log(minDate);
 
   return (
     <CustomCalendar
@@ -93,6 +81,11 @@ export function Calendar() {
       }}
       firstDay={1}
       minDate={minDate}
+      markingType="period"
+      markedDates={markedDates}
+      onDayPress={onDayPress}
     />
   );
 }
+
+export { MarkedDateProps, DayProps, Calendar };

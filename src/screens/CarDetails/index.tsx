@@ -1,4 +1,13 @@
 import React from 'react';
+
+import Animated, {
+  Extrapolate,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
+
 import { Accessory } from '../../components/Accessory';
 import { BackButton } from '../../components/BackButton';
 import { ImageSlider } from '../../components/ImageSlider';
@@ -7,7 +16,6 @@ import {
   Container,
   Header,
   CarImages,
-  Content,
   Details,
   Description,
   Brand,
@@ -20,68 +28,126 @@ import {
   Footer,
 } from './styles';
 
-import SpeedSvg from '../../assets/speed.svg';
-import AccelerationSvg from '../../assets/acceleration.svg';
-import ForceSvg from '../../assets/force.svg';
-import GasolineSvg from '../../assets/gasoline.svg';
-import ExchangeSvg from '../../assets/exchange.svg';
-import PeopleSvg from '../../assets/people.svg';
 import { Button } from '../../components/Button';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../../routes/types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { CarDTO } from '../../dtos/CarDTO';
+import { getAccessoryIcon } from '../../utils/getAccessoryIcon';
+import { getStatusBarHeight } from 'react-native-iphone-x-helper';
+import { StatusBar, StyleSheet } from 'react-native';
+import { useTheme } from 'styled-components';
+
+interface Params {
+  car: CarDTO;
+}
 
 export function CarDetails() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const route = useRoute();
+  const theme = useTheme();
+  const { car } = route.params as Params;
+
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+    console.log(event.contentOffset.y);
+  });
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      height: interpolate(
+        scrollY.value,
+        [0, 200],
+        [200, 80],
+        Extrapolate.CLAMP
+      ),
+    };
+  });
+
+  const carSliderAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(scrollY.value, [0, 150], [1, 0], Extrapolate.CLAMP),
+    };
+  });
 
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleConfirmRental = () => {
-    navigation.navigate('Scheduling', { id: 'Scheduling' });
+    navigation.navigate('Scheduling', { id: 'Scheduling', car });
   };
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={handleBack} />
-      </Header>
+      <StatusBar
+        barStyle="dark-content"
+        translucent
+        backgroundColor="transparent"
+      />
 
-      <CarImages>
-        <ImageSlider
-          imageUrls={['https://www.pngmart.com/files/1/Audi-RS5-Red-PNG.png']}
-        />
-      </CarImages>
+      <Animated.View
+        style={[
+          headerAnimatedStyle,
+          style.header,
+          {
+            backgroundColor: theme.colors.background_secondary,
+          },
+        ]}
+      >
+        <Header>
+          <BackButton onPress={handleBack} />
+        </Header>
 
-      <Content>
+        <Animated.View style={carSliderAnimatedStyle}>
+          <CarImages>
+            <ImageSlider imageUrls={car.photos} />
+          </CarImages>
+        </Animated.View>
+      </Animated.View>
+
+      <Animated.ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          padding: 24,
+          paddingTop: getStatusBarHeight() + 160,
+          alignItems: 'center',
+        }}
+        showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
         <Details>
           <Description>
-            <Brand>Lamborghini</Brand>
-            <Name>Huracan</Name>
+            <Brand>{car.brand}</Brand>
+            <Name>{car.name}</Name>
           </Description>
 
           <Rent>
-            <Period>Ao dia</Period>
-            <Price>R$ 580</Price>
+            <Period>{car.rent.period}</Period>
+            <Price>R$ {car.rent.price}</Price>
           </Rent>
         </Details>
 
         <Accessories>
-          <Accessory name="380Km/h" icon={SpeedSvg} />
-          <Accessory name="3.2s" icon={AccelerationSvg} />
-          <Accessory name="800 HP" icon={ForceSvg} />
-          <Accessory name="Gasolina" icon={GasolineSvg} />
-          <Accessory name="Auto" icon={ExchangeSvg} />
-          <Accessory name="2 Pessoas" icon={PeopleSvg} />
+          {car.accessories.map((accessory) => (
+            <Accessory
+              name={accessory.name}
+              icon={getAccessoryIcon(accessory.type)}
+              key={accessory.type}
+            />
+          ))}
         </Accessories>
 
         <About>
-          Este é um automóevel desportivo. Surgiu do lendário touro de lide
-          indultado na praça Real Maestranza de Sevilla. É um belíssimo carro
-          para quem gosta de acelerar.
+          {car.about}
+          {car.about}
+          {car.about}
+          {car.about}
+          {car.about}
         </About>
-      </Content>
+      </Animated.ScrollView>
 
       <Footer>
         <Button
@@ -92,3 +158,11 @@ export function CarDetails() {
     </Container>
   );
 }
+
+const style = StyleSheet.create({
+  header: {
+    position: 'absolute',
+    overflow: 'hidden',
+    zIndex: 1,
+  },
+});
