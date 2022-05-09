@@ -90,7 +90,12 @@ export function SchedulingDetails() {
         unavailable_dates,
       })
       .then((response) => {
-        navigation.navigate('SchedulingComplete', { id: 'SchedulingComplete' });
+        navigation.navigate('Confirmation', {
+          id: 'Confirmation',
+          message: `Agora você só precisar ir \n até a concessionária da RENTX \npegar o seu automóvel.`,
+          nextScreenRoute: 'Home',
+          title: 'Carro alugado!',
+        });
       })
       .catch((error) => {
         console.log(error);

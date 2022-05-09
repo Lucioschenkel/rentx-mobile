@@ -17,10 +17,27 @@ export type RootStackParamList = {
     car?: CarDTO;
     dates: string[];
   };
-  SchedulingComplete: {
+  Confirmation: {
     id: string;
+    title: string;
+    message: string;
+    nextScreenRoute: string;
   };
   MyCars: {
     id: string;
+  };
+  SignIn: {
+    id: string;
+  };
+  SignUpFirstStep: {
+    id: string;
+  };
+  SignUpSecondStep: {
+    id: string;
+    user: {
+      email: string;
+      name: string;
+      driversLicense: string;
+    };
   };
 };

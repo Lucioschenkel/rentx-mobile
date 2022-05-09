@@ -6,16 +6,26 @@ import { Container, Content, Title, Message, Footer } from './styles';
 import LogoSvg from '../../assets/logo_background_gray.svg';
 import DoneSvg from '../../assets/done.svg';
 import { ConfirmButton } from '../../components/ConfirmButton';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../routes/types';
 
-export function SchedulingComplete() {
+interface Params {
+  title: string;
+  message: string;
+  nextScreenRoute: string;
+}
+
+export function Confirmation() {
   const { width } = useWindowDimensions();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const route = useRoute();
+  const { message, nextScreenRoute, title } = route.params as Params;
 
   const handleOk = () => {
-    navigation.navigate('Home', { id: 'Home' });
+    navigation.navigate(nextScreenRoute as keyof RootStackParamList, {
+      id: nextScreenRoute,
+    });
   };
 
   return (
@@ -28,12 +38,9 @@ export function SchedulingComplete() {
       <LogoSvg width={width} />
       <Content>
         <DoneSvg width={80} height={80} />
-        <Title>Carro alugado!</Title>
+        <Title>{title}</Title>
 
-        <Message>
-          Agora você só precisar ir {'\n'} até a concessionária da RENTX {'\n'}
-          pegar o seu automóvel.
-        </Message>
+        <Message>{message}</Message>
       </Content>
 
       <Footer>

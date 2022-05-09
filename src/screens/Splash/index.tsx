@@ -22,7 +22,7 @@ export function Splash() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   function startApp() {
-    navigation.navigate('Home', { id: 'Home' });
+    navigation.navigate('SignIn', { id: 'SignIn' });
   }
 
   useEffect(() => {
